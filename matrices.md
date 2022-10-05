@@ -4,7 +4,7 @@
 
 ## Diagonal sum
 
-Find sum of diagonal evlements of a matrix n x n 
+Find sum of diagonal elements of a matrix n x n 
 
 ```python
 def diagonal_sum(mat):

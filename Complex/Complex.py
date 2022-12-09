@@ -3,9 +3,9 @@ import math
 
 class Complex:
 
-    def __init__(self, a=0, b=0):
-        self.re = a
-        self.im = b
+    def __init__(self, a: float = 0, b: float = 0):
+        self.re: float = a
+        self.im: float = b
 
     def __repr__(self):
         return f"{self.re} + ({self.im})i"
@@ -17,14 +17,17 @@ class Complex:
         return Complex(self.re - other.re, self.im - other.im)
 
     def __mul__(self, other):
-        return Complex(self.re*other.re - self.im*other.im, self.re*other.im + self.im*other.re)
+        return Complex(self.re * other.re - self.im * other.im, self.re * other.im + self.im * other.re)
 
-    def __rdiv__(self, other):
-        return self*other.conjugate/float(other)**2
+    def __truediv__(self, other):
+        tmp = self * other.conjugate()
+        return Complex(tmp.re / float(other) ** 2, tmp.im / float(other) ** 2)
 
     def conjugate(self):
         return Complex(self.re, -self.im)
 
     def __float__(self):
-        return math.sqrt(self.re**2 + self.im**2)
+        return math.sqrt(self.re ** 2 + self.im ** 2)
 
+    def __eq__(self, other):
+        return self.re == other.re and self.im == other.im

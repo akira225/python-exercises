@@ -7,12 +7,14 @@ class StrategyDeal:
 
     @staticmethod
     def parse_text_data(data: str):
-        data.replace("USD", "")
+        data = data.replace("USD", "")
         text_deals = data.split(SEPARATOR)
         ans = []
         for text_deal in text_deals:
 
             bank_str_idx = text_deal.find('Bank:')
+            if bank_str_idx == -1:
+                continue
             bank_str_idx_end = text_deal.find('\n', bank_str_idx)
             entry_str_idx = text_deal.find('Entry:')
             entry_str_idx_end = text_deal.find('\n', entry_str_idx)
@@ -38,39 +40,37 @@ class StrategyDeal:
         self.close = close
 
     def get_targets(self):
-        # вернуть список таргетов в виде числовых значений float [21.5, 22.8, 23.5]
-        pass
+        return self.targets
 
     def get_target_percents(self):
-        # вернуть список процентов, как в примере, округленные до 3 знака [6.912, 13.376, 16.857]
-        pass
+        ans = []
+        for t in self.targets:
+            ans.append(round(((t / self.entry) - 1) * 100, 3))
+        return ans
 
     def get_target_banks(self):
-        # список значений банков, если продавать активы по таргетам, как в пример, округленные до 3 знака [1069.12, 1133.764, 1168.573]
-        pass
+        ans = []
+        for t in self.targets:
+            ans.append(round(self.bank/self.entry*t, 3))
+        return ans
 
     def __str__(self):
         s_header = f"""BANK: {self.bank}
 START_PRICE: {self.entry}
 STOP_PRICE: {self.close}
-STOP_PERCENT: {((self.entry - self.close) - 1) * 100}
+STOP_PERCENT: {round(((self.close / self.entry) - 1) * 100, 3)}%
 STOP_BANK: {self.bank/self.entry*self.close}
 
+"""
+        target_text = []
+        for idx, t in enumerate(self.targets):
+            target_str = f"""{idx + 1} target: {t}
+Percent: {round(((t / self.entry) - 1) * 100, 3)}% 
+Bank: {round(self.bank/self.entry*t, 3)} 
 
-1 target: 21.5432423
-Percent: 7.101% # процент рассчитывается, как отношение таргета к цене входа: 21.5 / 20.11 и округляется до 3 знака
-Bank: 1071.01 # величина банка, если мы продадим все активы по цене первого таргета: 1000 * 6.912 и округляется до 3 знака
-
-2 target: 22.864732843
-Percent: 13.376% # процент рассчитывается, как отношение таргета к цене входа: 22.8 / 20.11 и округляется до 3 знака
-Bank: 1133.764
-
-3 target: 23.5 # процент рассчитывается, как отношение таргета к цене входа: 23.5 / 20.11 и округляется до 3 знака
-Percent: 16.857%
-Bank: 1168.573
-        """
-        s = s_header + ""
-        return s
+"""
+            target_text.append(target_str)
+        return s_header + "".join(target_text)
 
 
 def read_data(file_name=DEFAULT_INPUT_FILE):
@@ -78,14 +78,16 @@ def read_data(file_name=DEFAULT_INPUT_FILE):
         return f.read()
 
 
-def write_data(data, file_name=DEFAULT_OUTPUT_FILE):
+def write_data(data: list, file_name=DEFAULT_OUTPUT_FILE):
     with open(file_name, 'w') as f:
         out = f'{SEPARATOR}\n'.join([deal.__str__() for deal in data])
         f.write(out)
 
 
 def main():
-    pass
+    data = read_data()
+    deals = StrategyDeal.parse_text_data(data)
+    write_data(deals)
 
 
 if __name__ == '__main__':
